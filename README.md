@@ -16,3 +16,7 @@ Laptop is connectd to Monitor. This setiup is inside a shield room. A signal hou
 
 ## Algorithm flow chart
 ![EmanationDetectionFlowChart](https://github.com/venkateshsathya/PFED/assets/54123622/7a7fd028-b662-41b3-95a8-eb8073ab4200)
+
+## Time it takes to process one 25 MHz file
+![Screen Shot 2023-10-27 at 2 09 13 PM](https://github.com/venkateshsathya/PFED/assets/54123622/00dbbed7-b492-4080-9547-16e6a1442819)
+On a macbook with above configurations, it takes two minutes to process each file
