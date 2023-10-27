@@ -1,6 +1,9 @@
 # PFED
 Profiling free emanations detection
 
+## Python libraries to install for code to run
+yaml, sys, os, pick, dumpy, pytictoc, decimal, spicy.signal, copy, math
+
 ## IQ data location
 IQ files location in [link](https://drive.google.com/drive/folders/1Hx9GdysKPMb-so-tDZ4Bj20Lt9gqTRW1?usp=sharing)
 
