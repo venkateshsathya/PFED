@@ -211,7 +211,7 @@ def EmanationDetection(input_info, config_dict):
                                        emanationInputObj.cmap, emanationInputObj.scenario)
             # if plot_flag_spectrogram:
             #     spectrogram_emanations(iq, fs, CF_snapshot, emanationInputObj.folder)
-            #
+            #`
             # if plot_flag_FFToverIQ_IQFeature:
             #     fft_iq_iqpower_plot(iq, f_step, iq_feature, fs)
             # if plot_PSD_flag:
@@ -231,10 +231,13 @@ def EmanationDetection(input_info, config_dict):
 
                 plot_PSD(config_dict, iq, fs, emanationInputObj.PSD_plot_param['dur_ensemble'][0], perc_overlap, kaiser_beta_hh, \
                          f_range_hh, emanationInputObj.folder, \
-                         PSD_filename_addendum+ 'withoutPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][0], 'withoutPreprocessing')
+                         PSD_filename_addendum+ 'withoutPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][0], 'withoutPreprocessing',f_step)
                 plot_PSD(config_dict, iq_feature, fs, emanationInputObj.PSD_plot_param['dur_ensemble'][1], perc_overlap, kaiser_beta_hh,\
                          f_range_hh, emanationInputObj.folder, \
-                        PSD_filename_addendum+'withPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][1], 'withPreprocessing')
+                        PSD_filename_addendum+'withPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][1], 'withPreprocessing',f_step)
+                plot_PSD(config_dict, iq_feature, fs, emanationInputObj.PSD_plot_param['dur_ensemble'][0], perc_overlap,\
+                         kaiser_beta_hh, f_range_hh, emanationInputObj.folder, PSD_filename_addendum + 'withPreprocessing_noAveraging', high_ff_search,\
+                         emanationInputObj.PSD_plot_param['zoom_perc'][1], 'withPreprocessing_noAveraging',f_step)
 
             # print(fft_iq)
             bad_indices = np.argwhere(fft_iq_hh < log10_nan_check_limit)
@@ -355,10 +358,10 @@ def EmanationDetection(input_info, config_dict):
                     PSD_filename_addendum = 'Scenario_' + emanationInputObj.scenario + emanationInputObj.CF_p1_p2 + '_lowFF_'
                 plot_PSD(config_dict, iq[low_fh_indices], fs, emanationInputObj.PSD_plot_param['dur_ensemble'][2], perc_overlap, \
                          kaiser_beta_hh, frange_lh, emanationInputObj.folder, \
-                         PSD_filename_addendum + '_withoutPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][2], '_withoutPreprocessing')
+                         PSD_filename_addendum + '_withoutPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][2], '_withoutPreprocessing',f_step)
                 plot_PSD(config_dict, iq_feature[low_fh_indices], fs, emanationInputObj.PSD_plot_param['dur_ensemble'][3], perc_overlap, \
                          kaiser_beta_hh, frange_lh, emanationInputObj.folder, \
-                         PSD_filename_addendum + '_withPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][3], '_withPreprocessing')
+                         PSD_filename_addendum + '_withPreprocessing', high_ff_search, emanationInputObj.PSD_plot_param['zoom_perc'][3], '_withPreprocessing',f_step)
 
             SNR, f_est_lh, locpeaks_lh = EstimatePeaks(fft_iq_dB_lh, frange_lh, Fb_lh, min_peaks_detect, \
                                                        gb_thresh_lh, ntimes_ns,Maxpeaks_lh, config_dict)

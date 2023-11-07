@@ -6,6 +6,8 @@ import numpy as np
 from pytictoc import TicToc
 from decimal import Decimal
 
+pythonfiles_location = '/Users/venkat/Documents/scisrs/Emanations/Phase1/Emanations_JournalCode/Emanations/ParamSearch/'
+sys.path.insert(1, pythonfiles_location)
 
 pythonfiles_location = os.getcwd() + '/' #'/Users/venkat/Documents/scisrs/Emanations/Phase1/Emanations_JournalCode/Emanations/ParamSearch/'
 results_folder_top = os.getcwd() + '/'#'/Users/venkat/Documents/scisrs/Emanations/Phase1/Emanations_JournalCode/Results/Aug24th/final_1/'
@@ -62,7 +64,7 @@ s_range = [-1]  # np.arange(-1,-10,-2)
 ########
 ######
 def Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, freq_slot_range, results_folder, \
-                            results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param):
+                            results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param, SNR):
     samprate = 200e6
     BW = 200  # Mhz
     results_dict = {}
@@ -77,7 +79,7 @@ def Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, fre
 
         # duration_capture = scenario_IQfolder_dict[scenario]['durationcapture_ms']
 
-        results_folder = results_folder + '/'
+        results_folder = results_folder + '/SNR_' + str(int(SNR)) +  '/'
         try:
             os.mkdir(results_folder)
         except OSError as error:
@@ -94,15 +96,25 @@ def Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, fre
                 filename = 'Scenario_' + scenario + '_CF_' + str(int(CF + CF_freqslot / 1e6)) + 'MHz' + '.pkl'
                 with open(IQ_folder +  filename, 'rb') as dict_file:
                     dict_IQ = pickle.load(dict_file)
-                filt_dec_signal = dict_IQ['IQ']
-
+                iq = dict_IQ['IQ']
+                
+                # Generating complex noise for specified SNR
+                var_y = np.var(iq)#np.average(np.abs(iq))
+                var_s = 0.5*(var_y/(np.power(10, (SNR/10) )))
+                w_s_I = np.random.normal(loc = 0, scale = np.sqrt(var_s), size = len(iq))
+                w_s_Q = np.random.normal(loc = 0, scale = np.sqrt(var_s), size = len(iq))
+                w_s = w_s_I +1j*w_s_Q
+                compute_SNR = 10*np.log10(var_y/np.var(w_s))#10*np.log10(var_y/np.average(np.abs(w_s)))
+                print("Expected SNR is: ", SNR, " and computed SNR is: ", compute_SNR)
+                iq_s = iq + w_s
+                
                 ####### SLicing/bandpass filtering via kaiser filter
                 CF_p1_p2 = str(int(CF_freqslot / 1e6 + CF)) + hyper_param_string
                 print("Scenario is: ", scenario)
                 print(" CF: ", CF_freqslot + CF * 1e6)
                 print("Range of frequencies: Start freq: ", CF + SF_freqslot / 1e6, ' MHz. End freq: ',
                       CF + EF_freqslot / 1e6, ' MHz.')
-                data = {'iq': filt_dec_signal, 'sample_rate': samprate_slice, 'center_freq': CF_freqslot + CF * 1e6, \
+                data = {'iq': iq_s, 'sample_rate': samprate_slice, 'center_freq': CF_freqslot + CF * 1e6, \
                         'time_duration': trial_num, 'path': results_folder, \
                         'scenario': scenario, 'pythonfiles_location': pythonfiles_location, 'plot_dict': plot_dict, \
                         'CF_p1_p2': CF_p1_p2, 'PSD_plot_param': PSD_plot_param}
@@ -162,7 +174,7 @@ def Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, fre
             ####### Write values for each scenario to a single file that sits top of scenario folders.
             ####### Values shud be just the total number of pitch values each scenario for that chosen value of hyper parameters
             original_stdout = sys.stdout  # Save a reference to the original standard output
-            Results_file = results_folder_top + '/' + 'Num_EmanationsPerScenario.txt'
+            Results_file = results_folder + 'Num_EmanationsPerScenario.txt'
             if os.path.exists(Results_file):
                 append_write = 'a'  # append if already exists
             else:
@@ -204,25 +216,28 @@ def update_yaml_file(hyper_param, file_path="synapse_emanation_search.yaml"):
     print("yaml_data['EstimateHarmonic']: ", yaml_data['EstimateHarmonic'])
     return yaml_data
 
-
+# hyper_param['s1'] = s_range[0]
+# hyper_param['s2'] = s_range[0]
 # for hyper_param['s1'] in s_range:
 #     for hyper_param['s2'] in s_range:
         #         for hyper_param['wt'] in wt_range:
-config_dict = update_yaml_file(hyper_param)
+for SNR in [100,10,0,-5,-10,-15,-25]:    #([np.arange(100,11,-5), np.arange(10,0,-1)]):
+    
+    config_dict = update_yaml_file(hyper_param)
 
-PSD_plot_param['dur_ensemble'] = [0.1, config_dict['EmanationDetection']['dur_ensemble'], 0.1, 0.1]
+    PSD_plot_param['dur_ensemble'] = [0.1, config_dict['EmanationDetection']['dur_ensemble'], 0.1, 0.1]
 
-hyper_param_string = 'Results'#'s1_' + str(hyper_param['s1']) + 's2_' + str(hyper_param['s2'])
-                     #+ 'p_' + str(hyper_param['p1']) + "_Errthresh_2"
+    hyper_param_string = 'Results'#'s1_' + str(hyper_param['s1']) + 's2_' + str(hyper_param['s2'])
+                         #+ 'p_' + str(hyper_param['p1']) + "_Errthresh_2"
 
-results_folder = results_folder_top + hyper_param_string  # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
-try:
-    os.mkdir(results_folder)
-except OSError as error:
-    print(error)
-with open(results_folder + '/' + 'config_dict.pkl', 'wb') as f:
-    pickle.dump(config_dict, f)
+    results_folder = results_folder_top + hyper_param_string  # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
+    try:
+        os.mkdir(results_folder)
+    except OSError as error:
+        print(error)
+    with open(results_folder + '/' + 'config_dict.pkl', 'wb') as f:
+        pickle.dump(config_dict, f)
 
-# 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
-Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, freq_slot_range, results_folder, \
-                        results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param)
+    # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
+    Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, freq_slot_range, results_folder, \
+                            results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param, SNR)

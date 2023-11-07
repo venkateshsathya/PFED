@@ -93,7 +93,7 @@ from scipy.signal.windows import kaiser
 
 def plotpeaks(f_peaks, harmonic_list, f_range, fft_iq_dB, locpeaks, high_ff, zoom_perc_list, \
     plot_diffcolor_eachharmonic_flag,resultssavelocation, save_filename):
-
+    setaxislim_flag = False  # Set this flag to true so taht we manually specify the y limits.
     # psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta)
     # psd_val_dB = 10 * np.log10(psd_val)
     # win_len = np.floor(dur_ensemble * fs).astype(int)
@@ -191,16 +191,17 @@ def plotpeaks(f_peaks, harmonic_list, f_range, fft_iq_dB, locpeaks, high_ff, zoo
         plt.legend(fontsize=30)
         # fig.tight_layout()
 
-        if plot_diffcolor_eachharmonic_flag == True:
-            if high_ff:
-                plt.yticks(np.arange(-185, -140, 10), fontsize=30)
+        if setaxislim_flag:
+            if plot_diffcolor_eachharmonic_flag == True:
+                if high_ff:
+                    plt.yticks(np.arange(-185, -140, 10), fontsize=30)
+                else:
+                    plt.yticks(np.arange(-210, -140, 20), fontsize=30)
             else:
-                plt.yticks(np.arange(-210, -140, 20), fontsize=30)
-        else:
-            if high_ff:
-                plt.yticks(np.arange(-185, -140, 10),fontsize=30)
-            else:
-                plt.yticks(np.arange(-210, -140, 20),fontsize=30)
+                if high_ff:
+                    plt.yticks(np.arange(-185, -140, 10),fontsize=30)
+                else:
+                    plt.yticks(np.arange(-210, -140, 20),fontsize=30)
         plt.gcf().set_size_inches(12, 6)
         plt.subplots_adjust(left=0.12,
                             bottom=0.1,
@@ -306,9 +307,27 @@ def fft_iq_iqpower_plot(iq, f_step, iq_feature, fs):
     plt.show()
 
 def plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, f_range, resultssavelocation, save_filename,\
-             high_ff, zoom_perc_list, option_processing):
-    psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, config_dict)
+             high_ff, zoom_perc_list, option_processing, f_step):
+    setaxislim_flag = False # Set this flag to true so taht we manually specify the y limits.
+
+
+    if dur_ensemble == 0.1:
+        w = kaiser(len(iq_feature), kaiser_beta)
+        w /= np.sum(w)
+        w_energy = (np.real(np.vdot(w, w))) / len(w)
+        iq_w = np.multiply(iq_feature, w)
+        fft_iq = np.fft.fftshift(np.abs(np.fft.fft(iq_w)))
+        # fft_iq_slice = np.fft.fftshift(np.abs(np.fft.fft(iq_feature)))
+        psd_val = np.multiply(fft_iq, fft_iq) / (w_energy * len(w))
+    else:
+    # fft_power_dB = 10 * np.log10(fft_power)
+        psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, config_dict)
+
+    # psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, config_dict)
     psd_val_dB = 10 * np.log10(psd_val)
+    # f_step = int(25e6)
+    win_len = len(psd_val_dB)
+    f_range = np.arange(min(f_range), max(f_range), (max(f_range)-min(f_range))/win_len)
     # win_len = np.floor(dur_ensemble * fs).astype(int)
     # f_range_iq_plotval = np.arange(-f_step / 2, f_step / 2, fs / len(psd_val_dB))
     for zoom_perc in zoom_perc_list:
@@ -347,20 +366,21 @@ def plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_bet
         #
         # ticks = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * 1e3))
         # ax.xaxis.set_major_formatter(ticks)
-        if high_ff:
-            if option_processing in ['_withPreprocessing', 'withPreprocessing']:
-                # plt.ylim([-140,-180])
-                plt.yticks(np.arange(-180, -135, 10), fontsize=30)
+        if setaxislim_flag:
+            if high_ff:
+                if option_processing in ['_withPreprocessing', 'withPreprocessing']:
+                    # plt.ylim([-140,-180])
+                    plt.yticks(np.arange(-180, -135, 10), fontsize=30)
+                else:
+                    # plt.ylim([-130, -190])
+                    plt.yticks(np.arange(-190, -105, 20), fontsize=30)
             else:
-                # plt.ylim([-130, -190])
-                plt.yticks(np.arange(-190, -105, 20), fontsize=30)
-        else:
-            if option_processing in ['_withPreprocessing', 'withPreprocessing']:
-                # plt.ylim([-150,-230])
-                plt.yticks(np.arange(-230,-145,20), fontsize=30)
-            else:
-                # plt.ylim([-70, -170])
-                plt.yticks(np.arange(-170, -70, 20), fontsize=30)
+                if option_processing in ['_withPreprocessing', 'withPreprocessing']:
+                    # plt.ylim([-150,-230])
+                    plt.yticks(np.arange(-230,-145,20), fontsize=30)
+                else:
+                    # plt.ylim([-70, -170])
+                    plt.yticks(np.arange(-170, -70, 20), fontsize=30)
 
         plt.tick_params(top=False, bottom=True, left=True, right=False, labelleft=True, labelbottom=True,
                         length=8, width=3, direction='out')

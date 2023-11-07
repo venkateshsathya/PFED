@@ -117,7 +117,7 @@ def Error_ObjectiveFunctionEstimate(a_est, f_est,wt_meas_pred,freq_search,p1,p2,
 
     N = 1 #assigning dummy value, incase we do not enter the loop? error handling?
     # non_vectorized = True
-    print("s1 and s2 are: ",s1, s2)
+    # print("s1 and s2 are: ",s1, s2)
     if non_vectorized:
         Err_pred_meas = np.zeros(R)
         Err_meas_pred = np.zeros(R)
