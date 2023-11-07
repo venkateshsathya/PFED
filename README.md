@@ -4,6 +4,12 @@ Profiling free emanations detection
 ## Python libraries to install for code to run
 yaml, sys, os, pick, dumpy, pytictoc, decimal, spicy.signal, copy, math
 
+## How to run
+Copy the files manually to a directory.
+Copy the required IQ files that you wish to process. Details of sample IQ files can be found below in the page. Then run the following python file.
+python TopLevelFile.py
+The results that include pickle files and pdf plots are saved in the Results folder created in the same directory where the python files are run from.
+
 ## IQ data location
 IQ files location in [link](https://drive.google.com/drive/folders/1Hx9GdysKPMb-so-tDZ4Bj20Lt9gqTRW1?usp=sharing)
 
