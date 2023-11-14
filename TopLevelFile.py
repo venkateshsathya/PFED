@@ -162,7 +162,7 @@ def Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, fre
             ####### Write values for each scenario to a single file that sits top of scenario folders.
             ####### Values shud be just the total number of pitch values each scenario for that chosen value of hyper parameters
             original_stdout = sys.stdout  # Save a reference to the original standard output
-            Results_file = results_folder_top + '/' + 'Num_EmanationsPerScenario.txt'
+            Results_file = results_folder + 'Num_EmanationsPerScenario.txt'
             if os.path.exists(Results_file):
                 append_write = 'a'  # append if already exists
             else:

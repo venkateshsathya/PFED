@@ -55,8 +55,7 @@ plot_dict = {'spectrogram': plot_flags[0],
              'Objfunc_ErrvsFreq': plot_flags[2], \
              'peaks': plot_flags[3], 'cmap': cmap}
 hyper_param['err_thresh_perc'] = 2
-hyper_param['p1'] = 0.5
-hyper_param['p2'] = 0.5
+
 s_range = [-1]  # np.arange(-1,-10,-2)
 
 
@@ -213,7 +212,9 @@ def update_yaml_file(hyper_param, file_path="synapse_emanation_search.yaml"):
     yaml_data['EstimateHarmonic']['p_hh_2'] = float(str(hyper_param['p2']))
     yaml_data['EstimateHarmonic']['p_lh_1'] = float(str(hyper_param['p1']))
     yaml_data['EstimateHarmonic']['p_lh_2'] = float(str(hyper_param['p2']))
+    yaml_data['EmanationDetection']['ntimes_ns'] = float(str(hyper_param['ntimes_ns']))
     print("yaml_data['EstimateHarmonic']: ", yaml_data['EstimateHarmonic'])
+
     return yaml_data
 
 # hyper_param['s1'] = s_range[0]
@@ -221,23 +222,32 @@ def update_yaml_file(hyper_param, file_path="synapse_emanation_search.yaml"):
 # for hyper_param['s1'] in s_range:
 #     for hyper_param['s2'] in s_range:
         #         for hyper_param['wt'] in wt_range:
-for SNR in [100,10,0,-5,-10,-15,-25]:    #([np.arange(100,11,-5), np.arange(10,0,-1)]):
-    
-    config_dict = update_yaml_file(hyper_param)
 
-    PSD_plot_param['dur_ensemble'] = [0.1, config_dict['EmanationDetection']['dur_ensemble'], 0.1, 0.1]
 
-    hyper_param_string = 'Results'#'s1_' + str(hyper_param['s1']) + 's2_' + str(hyper_param['s2'])
-                         #+ 'p_' + str(hyper_param['p1']) + "_Errthresh_2"
+hyper_param['p2'] = 0.5
+for hyper_param['p1'] in [0.1, 0.5, 0.9]:
+    for hyper_param['ntimes_ns'] in [1.5,2,2.5,3,3.5,4]:
+        for SNR in np.arange(0,-18,-2):    #([np.arange(100,11,-5), np.arange(10,0,-1)]):
+            # if SNR >= -12:
+            #     hyper_param['ntimes_ns'] = 2
+            # else:
+            #     hyper_param['ntimes_ns'] = 3
+            print("hyper_param['ntimes_ns']: ", hyper_param['ntimes_ns'])
+            config_dict = update_yaml_file(hyper_param)
 
-    results_folder = results_folder_top + hyper_param_string  # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
-    try:
-        os.mkdir(results_folder)
-    except OSError as error:
-        print(error)
-    with open(results_folder + '/' + 'config_dict.pkl', 'wb') as f:
-        pickle.dump(config_dict, f)
+            PSD_plot_param['dur_ensemble'] = [0.1, config_dict['EmanationDetection']['dur_ensemble'], 0.1, 0.1]
 
-    # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
-    Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, freq_slot_range, results_folder, \
-                            results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param, SNR)
+            hyper_param_string = 'Results_C111323_p1_' + str(hyper_param['p1']) +"_nstimes_" + str(hyper_param['ntimes_ns'])#'s1_' + str(hyper_param['s1']) + 's2_' + str(hyper_param['s2'])
+                                 #+ 'p_' + str(hyper_param['p1']) + "_Errthresh_2"
+
+            results_folder = results_folder_top + hyper_param_string  # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
+            try:
+                os.mkdir(results_folder)
+            except OSError as error:
+                print(error)
+            with open(results_folder + '/' + 'config_dict.pkl', 'wb') as f:
+                pickle.dump(config_dict, f)
+
+            # 'p1_'+str(hyper_param['p1']) + '_p2_'+str(hyper_param['p2'])
+            Iteration_perHyperParam(scenario_list, scenario_IQfolder_dict, CF_range, freq_slot_range, results_folder, \
+                                    results_folder_top, hyper_param_string, config_dict, plot_dict, PSD_plot_param, SNR)

@@ -77,7 +77,7 @@ with open(IQ_folder + filename, 'rb') as dict_file:
     dict_IQ = pickle.load(dict_file)
 iq = dict_IQ['IQ']
 iq_dict = {}
-for SNR in [1000,100, 0,-10, -20]:
+for SNR in [0,-10, -12, -14, -16]:
     # Generating complex noise for specified SNR
     var_y = np.var(iq)  # np.average(np.abs(iq))
     var_s = 0.5 * (var_y / (np.power(10, (SNR / 10))))
@@ -98,7 +98,7 @@ else:
 	kaiser_beta = 3
 	f_range_hh = np.arange(-f_step / 2, f_step / 2, f_step / win_len)
 # zoom_perc_list = [30]#[4, 30, 100]
-zoom_perc = 30
+
 option_processing = 'withPreprocessing'
 
 
@@ -112,107 +112,117 @@ setaxislim_flag = False # Set this flag to true so taht we manually specify the 
 hyper_param_string = 'Overlap_Plots_GaussianNoise'#'s1_' + str(hyper_param['s1']) + 's2_' + str(hyper_param['s2'])
                          #+ 'p_' + str(hyper_param['p1']) + "_Errthresh_2"
 
-results_folder = results_folder_top + '/' + hyper_param_string
+results_folder = results_folder_top + '/' + hyper_param_string + '/'
 try:
     os.mkdir(results_folder)
 except OSError as error:
     print(error)
 
-# for zoom_perc in zoom_perc_list:
-x_lim_max = (zoom_perc/100)*np.max(f_range)
-x_lim_min = -x_lim_max
-max_idx = np.argmin(np.abs(f_range - x_lim_max))
-min_idx = np.argmin(np.abs(f_range - x_lim_min))
-if max_idx >len(f_range):
-    max_idx = len(f_range) - 1
-if min_idx < 0:
-    min_idx = 0
+for zoom_perc in [100, 30, 4]:
+
+    # for zoom_perc in zoom_perc_list:
+    x_lim_max = (zoom_perc/100)*np.max(f_range)
+    x_lim_min = -x_lim_max
+    max_idx = np.argmin(np.abs(f_range - x_lim_max))
+    min_idx = np.argmin(np.abs(f_range - x_lim_min))
+    if max_idx >len(f_range):
+        max_idx = len(f_range) - 1
+    if min_idx < 0:
+        min_idx = 0
 
 
-SNR_str = "SNR"
-for SNR in list(iq_dict.keys()):
-    SNR_str = SNR_str + '_' + SNR
-    iq = iq_dict[SNR]
-    iq_feature = np.real(np.multiply(iq, np.conj(iq))) # feature extraction
-    iq_feature = iq_feature - np.mean(iq_feature) # remove DC
+    SNR_str = "SNR"
+    for SNR in list(iq_dict.keys()):
+        SNR_str = SNR_str + '_' + str(SNR)
+        iq = iq_dict[SNR]
+        iq_feature = np.real(np.multiply(iq, np.conj(iq))) # feature extraction
+        iq_feature = iq_feature - np.mean(iq_feature) # remove DC
 
-    if compute_PSD_noAvg:
-        w = kaiser(len(iq_feature), kaiser_beta)
-        w /= np.sum(w)
-        w_energy = (np.real(np.vdot(w, w))) / len(w)
-        iq_w = np.multiply(iq_feature, w)
-        fft_iq = np.fft.fftshift(np.abs(np.fft.fft(iq_w)))
-        # fft_iq_slice = np.fft.fftshift(np.abs(np.fft.fft(iq_feature)))
-        psd_val = np.multiply(fft_iq, fft_iq) / (w_energy * len(w))
-    else:
-    # fft_power_dB = 10 * np.log10(fft_power)
-        psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, config_dict)
-    psd_val_dB = 10 * np.log10(psd_val) 
-    f_range_zoom = f_range[min_idx:max_idx]#np.linspace(x_lim_min, x_lim_max, num=len(psd_val))
-    psd_val_dB_zoom = psd_val_dB[min_idx:max_idx]
-    if high_ff_search:
-        f_range_updated = np.divide(f_range_zoom,1e6)
-        x_label = 'Frequency (MHz)'
-    
-    else:
-        f_range_updated = np.divide(f_range_zoom, 1e3)
-        x_label = 'Frequency (kHz)'
-    
-    plt.plot(f_range_updated, psd_val_dB_zoom)
-plt.legend(list(iq_dict.keys()))
-    # plt.title("Power/ spectral density", fontsize=30)
-    # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
-    # plt.legend(legend_text,fontsize=36)
-if  option_processing in ['_withPreprocessing', 'withPreprocessing']:
-    plt.xlabel(x_label, fontsize=30)
-if zoom_perc == 100:
-    plt.ylabel("Power (dB)", fontsize=30)
-plt.xticks(fontsize=30)
-# plt.yticks(fontsize=30)
-
-# ticks = matplotlib.ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(int(CF_snapshot / 1e6) + y / 1e6))
-# ax.yaxis.set_major_formatter(ticks)
-#
-# ticks = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * 1e3))
-# ax.xaxis.set_major_formatter(ticks)
-if setaxislim_flag:
-    if high_ff_search:
-        if option_processing in ['_withPreprocessing', 'withPreprocessing']:
-            # plt.ylim([-140,-180])
-            plt.yticks(np.arange(-180, -135, 10), fontsize=30)
+        if compute_PSD_noAvg:
+            w = kaiser(len(iq_feature), kaiser_beta)
+            w /= np.sum(w)
+            w_energy = (np.real(np.vdot(w, w))) / len(w)
+            iq_w = np.multiply(iq_feature, w)
+            fft_iq = np.fft.fftshift(np.abs(np.fft.fft(iq_w)))
+            # fft_iq_slice = np.fft.fftshift(np.abs(np.fft.fft(iq_feature)))
+            psd_val = np.multiply(fft_iq, fft_iq) / (w_energy * len(w))
         else:
-            # plt.ylim([-130, -190])
-            plt.yticks(np.arange(-190, -105, 20), fontsize=30)
-    else:
-        if option_processing in ['_withPreprocessing', 'withPreprocessing']:
-            # plt.ylim([-150,-230])
-            plt.yticks(np.arange(-230,-145,20), fontsize=30)
+        # fft_power_dB = 10 * np.log10(fft_power)
+            psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, config_dict)
+        psd_val_dB = 10 * np.log10(psd_val)
+        f_range_zoom = f_range[min_idx:max_idx]#np.linspace(x_lim_min, x_lim_max, num=len(psd_val))
+        psd_val_dB_zoom = psd_val_dB[min_idx:max_idx]
+        if high_ff_search:
+            f_range_updated = np.divide(f_range_zoom,1e6)
+            x_label = 'Frequency (MHz)'
+
         else:
-            # plt.ylim([-70, -170])
-            plt.yticks(np.arange(-170, -70, 20), fontsize=30)
+            f_range_updated = np.divide(f_range_zoom, 1e3)
+            x_label = 'Frequency (kHz)'
 
-plt.tick_params(top=False, bottom=True, left=True, right=False, labelleft=True, labelbottom=True,
-                length=8, width=3, direction='out')
+        plt.plot(f_range_updated, psd_val_dB_zoom)
+    leg = plt.legend(list(iq_dict.keys()), title="SNR", fontsize=30, title_fontsize= 40)
+     # plt.legend()
+    # get the individual lines inside legend and set line width
+    for line in leg.get_lines():
+        line.set_linewidth(4)
+        # plt.title("Power/ spectral density", fontsize=40)
+        # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
+        # plt.legend(legend_text,fontsize=36)
+    # if  option_processing in ['_withPreprocessing', 'withPreprocessing']:
+    plt.xlabel(x_label, fontsize=40)
+    # if zoom_perc == 100:
+    # plt.yticks([])
+    if zoom_perc == 100:
+        plt.ylabel("Power (dB)", fontsize=40)
 
-# fig.tight_layout()
-plt.gcf().set_size_inches(12, 6)
-plt.subplots_adjust(left=0.12,
-                    bottom=0.1,
-                    right=0.9,
-                    top=0.95,
-                    wspace=0.25,
-                    hspace=0.25)
-# plt.savefig(save_plot_location + 'EmanationsFromDesktop_CineBench_FFTIQ_IQpower.png', format='png',
-#             bbox_inches='tight', pad_inches=.01)
-plt.tight_layout()
+    plt.yticks(np.arange(-180, -135, 10), fontsize=40)
+    plt.xticks(fontsize=40)
 
-plt.savefig(results_folder + SNR_str+'.pdf', format='pdf', bbox_inches='tight', pad_inches=.01)
-# plt.savefig(resultssavelocation + 'PSD_' + save_filename + '_zoomperc_' + str(zoom_perc)+ '.pdf', \
-#             format='pdf', bbox_inches='tight', pad_inches=.01)
-plt.show()
-# plt.close()
 
-#plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, \
-  #   f_range, emanationInputObj.folder, \
-   #  PSD_filename_addendum+ option_processing, high_ff_search, zoom_perc_list, option_processing)
+    # ticks = matplotlib.ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(int(CF_snapshot / 1e6) + y / 1e6))
+    # ax.yaxis.set_major_formatter(ticks)
+    #
+    # ticks = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * 1e3))
+    # ax.xaxis.set_major_formatter(ticks)
+    if setaxislim_flag:
+        if high_ff_search:
+            if option_processing in ['_withPreprocessing', 'withPreprocessing']:
+                # plt.ylim([-140,-180])
+                plt.yticks(np.arange(-180, -135, 10), fontsize=40)
+            else:
+                # plt.ylim([-130, -190])
+                plt.yticks(np.arange(-190, -105, 20), fontsize=40)
+        else:
+            if option_processing in ['_withPreprocessing', 'withPreprocessing']:
+                # plt.ylim([-150,-230])
+                plt.yticks(np.arange(-230,-145,20), fontsize=40)
+            else:
+                # plt.ylim([-70, -170])
+                plt.yticks(np.arange(-170, -70, 20), fontsize=40)
+
+    plt.tick_params(top=False, bottom=True, left=True, right=False, labelleft=True, labelbottom=True,
+                    length=8, width=3, direction='out')
+
+    # fig.tight_layout()
+    plt.gcf().set_size_inches(15, 10)
+    plt.subplots_adjust(left=0.12,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.95,
+                        wspace=0.25,
+                        hspace=0.25)
+    # plt.savefig(save_plot_location + 'EmanationsFromDesktop_CineBench_FFTIQ_IQpower.png', format='png',
+    #             bbox_inches='tight', pad_inches=.01)
+    plt.tight_layout()
+
+    plt.savefig(results_folder + SNR_str + '_zp_' + str(zoom_perc) + '.pdf', format='pdf', bbox_inches='tight', pad_inches=.01)
+    # plt.savefig(resultssavelocation + 'PSD_' + save_filename + '_zoomperc_' + str(zoom_perc)+ '.pdf', \
+    #             format='pdf', bbox_inches='tight', pad_inches=.01)
+    # plt.show()
+    plt.close()
+
+    #plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, \
+      #   f_range, emanationInputObj.folder, \
+       #  PSD_filename_addendum+ option_processing, high_ff_search, zoom_perc_list, option_processing)
 

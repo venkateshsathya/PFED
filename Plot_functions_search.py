@@ -93,7 +93,7 @@ from scipy.signal.windows import kaiser
 
 def plotpeaks(f_peaks, harmonic_list, f_range, fft_iq_dB, locpeaks, high_ff, zoom_perc_list, \
     plot_diffcolor_eachharmonic_flag,resultssavelocation, save_filename):
-    setaxislim_flag = False  # Set this flag to true so taht we manually specify the y limits.
+    setaxislim_flag = True  # Set this flag to true so taht we manually specify the y limits.
     # psd_val = WelchPSDEstimate(iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta)
     # psd_val_dB = 10 * np.log10(psd_val)
     # win_len = np.floor(dur_ensemble * fs).astype(int)
@@ -171,7 +171,7 @@ def plotpeaks(f_peaks, harmonic_list, f_range, fft_iq_dB, locpeaks, high_ff, zoo
                     plt.scatter(peaks_scaled[idx_closest], fft_iq_dB_peaks[idx_closest], marker=marker_list[marker_idx],
                                 color=marker_color[marker_idx], label=legend_label)
                     marker_idx = marker_idx + 1
-            plt.xlabel(x_label, fontsize=30)
+            plt.xlabel(x_label, fontsize=40)
 
         else:
             marker_list = ['o']
@@ -181,28 +181,30 @@ def plotpeaks(f_peaks, harmonic_list, f_range, fft_iq_dB, locpeaks, high_ff, zoo
                         fft_iq_dB_peaks[min_closest_idx: max_closest_idx + 1], marker=marker_list[marker_idx],
                         color=marker_color[marker_idx])
 
-            # plt.xlabel(x_label, fontsize=30)
-        # plt.title("Power spectral density", fontsize=30)
+            # plt.xlabel(x_label, fontsize=40)
+        # plt.title("Power spectral density", fontsize=40)
 
         if zoom_perc == 100:
-            plt.ylabel("Power (dB)", fontsize=30)
-        plt.xticks(fontsize=30)
-        # plt.yticks(fontsize=30)
-        plt.legend(fontsize=30)
+            plt.ylabel("Power (dB)", fontsize=40)
+        plt.xticks(fontsize=40)
+        # plt.yticks(fontsize=40)
+        plt.legend(fontsize=40)
         # fig.tight_layout()
 
         if setaxislim_flag:
             if plot_diffcolor_eachharmonic_flag == True:
                 if high_ff:
-                    plt.yticks(np.arange(-185, -140, 10), fontsize=30)
+                    plt.yticks(np.arange(-185, -140, 10), fontsize=40)
                 else:
-                    plt.yticks(np.arange(-210, -140, 20), fontsize=30)
+                    plt.yticks(np.arange(-210, -140, 20), fontsize=40)
             else:
                 if high_ff:
-                    plt.yticks(np.arange(-185, -140, 10),fontsize=30)
+                    plt.yticks(np.arange(-185, -140, 10),fontsize=40)
                 else:
-                    plt.yticks(np.arange(-210, -140, 20),fontsize=30)
-        plt.gcf().set_size_inches(12, 6)
+                    plt.yticks(np.arange(-210, -140, 20),fontsize=40)
+
+
+        plt.gcf().set_size_inches(15, 10)
         plt.subplots_adjust(left=0.12,
                             bottom=0.1,
                             right=0.9,
@@ -229,7 +231,7 @@ def spectrogram_emanations(iq, fs, CF_snapshot, resultssavelocation, save_filena
     pxx, freq, t, cax = ax.specgram(iq, Fs=fs,
                                     NFFT=NFFT, noverlap=NFFT / 2, cmap=cmap, vmin=-180)
     # fig.colorbar(cax)
-    # plt.title("Spectrogram", fontsize=30)
+    # plt.title("Spectrogram", fontsize=40)
     fig.colorbar(cax).set_label('Power spectral density (dB/Hz)')
     # scale = 1e3                     # KHz
     ticks = matplotlib.ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(int(CF_snapshot / 1e6) + y / 1e6))
@@ -274,7 +276,7 @@ def fft_iq_iqpower_plot(iq, f_step, iq_feature, fs):
     x_axis_freqval_MHz = f_range_iq_plotval[zoom_limit_idx] / 1e6
     plt.subplot(211)
     plt.plot(x_axis_freqval_MHz, fft_iq_plotval[zoom_limit_idx])
-    plt.title("FFT over IQ", fontsize=30)
+    plt.title("FFT over IQ", fontsize=40)
     # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
     # plt.legend(legend_text,fontsize=36)
     # plt.xlabel("Frequency (MHz)" ,fontsize=20)
@@ -287,7 +289,7 @@ def fft_iq_iqpower_plot(iq, f_step, iq_feature, fs):
     zoom_limit_idx2 = np.arange(int(len(iq_feature) / 2) - zoom_len_2, int(len(iq_feature) / 2) + zoom_len_2)
     x_axis_freqval_MHz = f_range_iqfeature_plotval[zoom_limit_idx2] / 1e6
     plt.plot(x_axis_freqval_MHz, fft_iqfeature_plotval[zoom_limit_idx2])
-    plt.title("FFT over IQ power", fontsize=30)
+    plt.title("FFT over IQ power", fontsize=40)
     # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
     # plt.legend(legend_text,fontsize=36)
     plt.xlabel("Frequency (MHz)", fontsize=20)
@@ -295,7 +297,7 @@ def fft_iq_iqpower_plot(iq, f_step, iq_feature, fs):
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     fig.tight_layout()
-    plt.gcf().set_size_inches(12, 6)
+    plt.gcf().set_size_inches(15, 10)
     plt.subplots_adjust(left=0.12,
                         bottom=0.1,
                         right=0.9,
@@ -308,7 +310,7 @@ def fft_iq_iqpower_plot(iq, f_step, iq_feature, fs):
 
 def plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_beta, f_range, resultssavelocation, save_filename,\
              high_ff, zoom_perc_list, option_processing, f_step):
-    setaxislim_flag = False # Set this flag to true so taht we manually specify the y limits.
+    setaxislim_flag = True # Set this flag to true so taht we manually specify the y limits.
 
 
     if dur_ensemble == 0.1:
@@ -351,15 +353,15 @@ def plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_bet
             f_range_updated = np.divide(f_range_zoom, 1e3)
             x_label = 'Frequency (kHz)'
         plt.plot(f_range_updated, psd_val_dB_zoom)
-        # plt.title("Power/ spectral density", fontsize=30)
+        # plt.title("Power/ spectral density", fontsize=40)
         # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
         # plt.legend(legend_text,fontsize=36)
         if  option_processing in ['_withPreprocessing', 'withPreprocessing']:
-            plt.xlabel(x_label, fontsize=30)
+            plt.xlabel(x_label, fontsize=40)
         if zoom_perc == 100:
-            plt.ylabel("Power (dB)", fontsize=30)
-        plt.xticks(fontsize=30)
-        # plt.yticks(fontsize=30)
+            plt.ylabel("Power (dB)", fontsize=40)
+        plt.xticks(fontsize=40)
+        # plt.yticks(fontsize=40)
 
         # ticks = matplotlib.ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(int(CF_snapshot / 1e6) + y / 1e6))
         # ax.yaxis.set_major_formatter(ticks)
@@ -367,26 +369,30 @@ def plot_PSD(config_dict, iq_feature, fs, dur_ensemble, perc_overlap, kaiser_bet
         # ticks = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * 1e3))
         # ax.xaxis.set_major_formatter(ticks)
         if setaxislim_flag:
+            # if zoom_perc == 100:
             if high_ff:
                 if option_processing in ['_withPreprocessing', 'withPreprocessing']:
                     # plt.ylim([-140,-180])
-                    plt.yticks(np.arange(-180, -135, 10), fontsize=30)
+                    plt.yticks(np.arange(-185, -145, 10), fontsize=40)
                 else:
                     # plt.ylim([-130, -190])
-                    plt.yticks(np.arange(-190, -105, 20), fontsize=30)
+                    plt.yticks(np.arange(-195, -50, 20), fontsize=40)
             else:
                 if option_processing in ['_withPreprocessing', 'withPreprocessing']:
                     # plt.ylim([-150,-230])
-                    plt.yticks(np.arange(-230,-145,20), fontsize=30)
+                    plt.yticks(np.arange(-230,-145,20), fontsize=40)
                 else:
                     # plt.ylim([-70, -170])
-                    plt.yticks(np.arange(-170, -70, 20), fontsize=30)
+                    plt.yticks(np.arange(-170, -70, 20), fontsize=40)
+            # else:
+            #     plt.yticks([])
+
 
         plt.tick_params(top=False, bottom=True, left=True, right=False, labelleft=True, labelbottom=True,
                         length=8, width=3, direction='out')
 
         # fig.tight_layout()
-        plt.gcf().set_size_inches(12, 6)
+        plt.gcf().set_size_inches(15, 10)
         plt.subplots_adjust(left=0.12,
                             bottom=0.1,
                             right=0.9,
@@ -425,7 +431,7 @@ def Objfunc_ErrvsFreq_plot(harmonic_list, CF_p1_p2, resultssavelocation):
             plt.plot(obj_func_val['freq_search'], obj_func_val['Err_total'])
             # plt.plot(harmonic_list[harmonic_freq]['freq_search_fine'], harmonic_list[harmonic_freq]['Err_total_fine'])
             # plt.legend(['Coarse', 'Fine'])
-        # plt.title("Objective function.", fontsize=30)
+        # plt.title("Objective function.", fontsize=40)
         # plt.tick_params(top=False,bottom=True,left=True,right=False,labelleft=True,labelbottom=True,length=8,width=3, direction='out')
         # plt.legend(legend_text,fontsize=36)
         plt.xlabel('Candidate pitch frequency in Hz', fontsize=20)
@@ -433,7 +439,7 @@ def Objfunc_ErrvsFreq_plot(harmonic_list, CF_p1_p2, resultssavelocation):
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         # fig.tight_layout()
-        plt.gcf().set_size_inches(12, 6)
+        plt.gcf().set_size_inches(15, 10)
         plt.subplots_adjust(left=0.12,
                             bottom=0.1,
                             right=0.9,
